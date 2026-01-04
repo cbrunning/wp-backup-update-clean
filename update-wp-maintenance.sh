@@ -51,6 +51,7 @@ fi
 cd "$REPO_DIR"
 echo "Updating repository..."
 git pull origin main
+chmod 700 "$REPO_DIR/update-wp-maintenance.sh"  
 
 # Step 4: Install script and config
 cp wp-maintenance.sh "$SCRIPT_DEST"
