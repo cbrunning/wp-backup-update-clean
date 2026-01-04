@@ -18,12 +18,14 @@ Tested on NearlyFreeSpeech.NET (NFSN) accounts. The default configuration uses N
 
 For a clean separation between source code and runtime files:
 
+```plaintext
 /home/private/
 ├── wp-maintenance.sh                  # Script called by cron
 ├── wp-maintenance.conf                # Your site-specific configuration
 ├── repos/                             # Git repositories (created automatically if needed)
 │   └── wp-backup-update-clean/        # Cloned repository
 └── wordpress-maintenance-backups/     # Final backups (created automatically)
+```
 
 The included `update-wp-maintenance.sh` helper script will prompt to create `/home/private/repos` (and other required directories) if missing.
 
