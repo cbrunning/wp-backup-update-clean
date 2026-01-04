@@ -1,0 +1,23 @@
+# Sensitive configuration
+wp-maintenance.conf
+wp-maintenance.conf.bak
+wp-maintenance.conf~
+wp-maintenance.conf.tmp
+
+# Logs and temporaries
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Directories
+/backups/
+/tmp/
+/private/
+/logs/
+
+# Other 
+.DS_Store
+Thumbs.db
+.vscode/
