@@ -33,15 +33,31 @@ If you prefer a different location, adjust the paths in the update script or clo
 
 ### Quick Start on NFSN
 
+Create the repo directory if needed, and enter the directory:
 ```bash
 cd /home/private/repos || mkdir -p /home/private/repos && cd /home/private/repos
-git clone git@github.com:cbrunning/wp-backup-update-clean.git
-cd /home/private 
-exec /home/private/repos/wp-backup-update-clean/update-wp-maintenance.sh
 ```
-(Using SSH is recommended — see GitHub docs for key setup. The helper script will guide you through any missing directories and configuration.)
+### Clone the Repository
 
-After the setup completes, edit /home/private/wp-maintenance.conf to set your DOMAIN and review other paths/settings for your site.
+Use HTTPS (no authentication required):
+```bash
+git clone https://github.com/cbrunning/wp-backup-update-clean.git
+```
+Or use SSH (requires a GitHub account with an SSH key added):
+```bash
+git clone git@github.com:cbrunning/wp-backup-update-clean.git
+```
+Then run the update helper script:
+```bash
+cd /home/private
+/home/private/repos/wp-backup-update-clean/update-wp-maintenance.sh
+```
+Notes:
+
+- The helper script will guide you through creating any missing directories and the initial configuration file
+- Using SSH for `git clone` is recommended. See [GitHub Docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) for info on key setup, if needed
+
+After setup completes, **edit `/home/private/wp-maintenance.conf`** to set your `DOMAIN` and review other paths/settings for your site.
 
 You can then test with a dry run:
 ```bash
