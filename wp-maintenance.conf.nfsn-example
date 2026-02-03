@@ -1,20 +1,20 @@
 # NearlyFreeSpeech.NET optimized configuration example
-# Copy to /home/private/wp-maintenance.conf or to your script directory and edit as needed
+# Copy to /home/private/wp-maintenance.conf and edit as needed
 
 DOMAIN="yourdomain.example.com"
 
 # Standard NFSN paths
 WP_ROOT="/home/public"
 TMP_DIR="/home/tmp/backups"
-BACKUP_DIR="/home/private/wordpress-maintenance-backups"  
+BACKUP_DIR="/home/private/wordpress-maintenance-backups"
 
 WP_CLI_CACHE="/home/private/.wp-cli/cache"
 LOG_DIR="/home/logs"
 MAINT_LOG="/home/logs/wp-maintenance.log"
 
-# Reasonable defaults (disk space can be limited)
-RETENTION_BACKUPS=90     # ~3 months 
-RETENTION_LOGS=365       # 1 year
+RETENTION_BACKUPS=108    # days to keep backups
+RETENTION_LOGS=540       # days to keep general logs
+RETENTION_WPCLI=90       # days to keep WP-CLI caches (default 90 if not set)
 
 # Adjust if your update script is elsewhere
 UPDATE_SCRIPT="/usr/local/bin/wp-update.sh"

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Configurable paths
-REPO_PARENT="/home/private/repos"                 
-REPO_DIR="$REPO_PARENT/wp-backup-update-clean"    
+REPO_PARENT="/home/private/repos"
+REPO_DIR="$REPO_PARENT/wp-backup-update-clean"
 SCRIPT_DEST="/home/private/wp-maintenance.sh"
 CONFIG_DEST="/home/private/wp-maintenance.conf"
 TMP_BACKUP_DIR="/home/tmp/backups"
@@ -51,9 +51,8 @@ fi
 cd "$REPO_DIR"
 echo "Updating repository..."
 git pull origin main
-chmod 700 "$REPO_DIR/update-wp-maintenance.sh"  
 
-# Step 4: Install script and config
+# Step 4: Install script and ensure executable
 cp wp-maintenance.sh "$SCRIPT_DEST"
 chmod 700 "$SCRIPT_DEST"
 echo "Installed script to $SCRIPT_DEST"
@@ -62,19 +61,38 @@ echo "Installed script to $SCRIPT_DEST"
 create_dir_if_needed "$TMP_BACKUP_DIR" "Temporary backup directory"
 create_dir_if_needed "$FINAL_BACKUP_DIR" "Final backup storage directory"
 
-# Step 6: Config
+# Step 6: Handle configuration
 if [[ ! -f "$CONFIG_DEST" ]]; then
     echo
     echo "No configuration found. Copying NFSN example..."
     cp wp-maintenance.conf.nfsn-example "$CONFIG_DEST"
-    echo "-- Created $CONFIG_DEST"
+    echo "→ Created $CONFIG_DEST"
     echo "   Please edit DOMAIN and other settings!"
 else
-    echo "Existing config preserved at $CONFIG_DEST"
+    # Backup existing config
+    CONFIG_BACKUP="$CONFIG_DEST.bak.$(date +%Y%m%d_%H%M%S)"
+    cp "$CONFIG_DEST" "$CONFIG_BACKUP"
+    echo "Backed up existing config to $CONFIG_BACKUP"
+
+    # Check if RETENTION_WPCLI is already present
+    if ! grep -q "^RETENTION_WPCLI=" "$CONFIG_DEST"; then
+        echo "RETENTION_WPCLI is not defined in $CONFIG_DEST."
+        read -p "Insert it now (default 90) after RETENTION_LOGS? (y/n): " insert_answer
+        if [[ "$insert_answer" =~ ^[Yy]$ ]]; then
+            # Insert after RETENTION_LOGS
+            awk '/^RETENTION_LOGS=/ {print; print "RETENTION_WPCLI=90       # days to keep WP-CLI caches (default 90 if not set)"; next} {print}' "$CONFIG_DEST" > "$CONFIG_DEST.tmp"
+            mv "$CONFIG_DEST.tmp" "$CONFIG_DEST"
+            echo "Inserted RETENTION_WPCLI=90 into $CONFIG_DEST"
+        else
+            echo "Skipping insertion. You can add RETENTION_WPCLI manually (defaults to 90)."
+        fi
+    else
+        echo "Existing config preserved at $CONFIG_DEST (RETENTION_WPCLI already defined)."
+    fi
 fi
 
 echo
 echo "Setup complete!"
-echo "Cron command: $SCRIPT_DEST --quiet"
-echo "Repository: $REPO_DIR"
-echo "Version: $(git rev-parse --short HEAD)"
+echo "Main script: $SCRIPT_DEST"
+echo "Current version: $(git rev-parse --short HEAD)"
+echo "Run a dry test with: $SCRIPT_DEST --dry-run"

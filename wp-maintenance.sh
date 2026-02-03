@@ -35,6 +35,9 @@ fi
 # shellcheck source=/home/private/wp-maintenance.conf
 source "$CONFIG_FILE"
 
+# Set default for RETENTION_WPCLI if not defined
+: "${RETENTION_WPCLI:=90}"
+
 required_vars=(
     DOMAIN WP_ROOT TMP_DIR BACKUP_DIR WP_CLI_CACHE
     LOG_DIR MAINT_LOG RETENTION_BACKUPS RETENTION_LOGS
@@ -169,10 +172,10 @@ fi
 log "Starting post-update cleanup..."
 
 if [[ -d "$WP_CLI_CACHE" ]]; then
-    dry_log "Would clean WP-CLI caches older than $RETENTION_BACKUPS days"
+    dry_log "Would clean WP-CLI caches older than $RETENTION_WPCLI days"
     if ! $DRY_RUN; then
-        find "$WP_CLI_CACHE"/{core,plugin,theme} -type f -mtime +"$RETENTION_BACKUPS" -delete 2>/dev/null || true
-        log "Cleaned WP-CLI caches older than $RETENTION_BACKUPS days"
+        find "$WP_CLI_CACHE"/{core,plugin,theme} -type f -mtime +"$RETENTION_WPCLI" -delete 2>/dev/null || true
+        log "Cleaned WP-CLI caches older than $RETENTION_WPCLI days"
     fi
 fi
 
