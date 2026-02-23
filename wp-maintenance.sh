@@ -193,15 +193,22 @@ if ! $DRY_RUN; then
     log "Flushed WordPress object cache"
 fi
 
-if [[ -r "$XMLRPC_ORIG" && ! -e "$XMLRPC_DISABLED" ]]; then
+# Disable xmlrpc.php by renaming — always do this if xmlrpc.php exists
+if [[ -r "$XMLRPC_ORIG" ]]; then
     if $DRY_RUN; then
-        dry_log "Would rename $XMLRPC_ORIG → $XMLRPC_DISABLED"
+        dry_log "Would rename $XMLRPC_ORIG → $XMLRPC_DISABLED (and timestamp any existing .disabled)"
     else
+        # Timestamp existing .disabled if it exists
+        if [[ -e "$XMLRPC_DISABLED" ]]; then
+            TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+            mv "$XMLRPC_DISABLED" "${XMLRPC_DISABLED}.${TIMESTAMP}"
+            log "Timestamped existing xmlrpc.php.disabled to ${XMLRPC_DISABLED}.${TIMESTAMP}"
+        fi
         mv "$XMLRPC_ORIG" "$XMLRPC_DISABLED"
         log "Disabled xmlrpc.php by renaming to xmlrpc.php.disabled"
     fi
 else
-    log "xmlrpc.php already disabled or not present"
+    log "xmlrpc.php not present — no action needed"
 fi
 
 log "Full maintenance completed successfully"
