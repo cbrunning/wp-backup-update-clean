@@ -12,9 +12,10 @@ WP_CLI_CACHE="/home/private/.wp-cli/cache"
 LOG_DIR="/home/logs"
 MAINT_LOG="/home/logs/wp-maintenance.log"
 
-RETENTION_BACKUPS=108    # days to keep backups
+# Disk space usage can be limited 
+RETENTION_BACKUPS=108    # days to keep backups (consider keeping this number low while regularly sending backups to external storage)
 RETENTION_LOGS=540       # days to keep general logs
-RETENTION_WPCLI=90       # days to keep WP-CLI caches (default 90 if not set)
+RETENTION_WPCLI=90       # days to keep WP-CLI caches (e.g. older versions of plugins & themes)
 
 # Adjust if your update script is elsewhere
 UPDATE_SCRIPT="/usr/local/bin/wp-update.sh"
