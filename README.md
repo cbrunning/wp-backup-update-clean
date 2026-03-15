@@ -6,7 +6,7 @@ Bash script for automated WordPress maintenance:
 - Runs updates via a customizable update script (typically WordPress core, plugin, and theme updates using WP-CLI)  
 - Performs post-update cleanup (caches, old logs, WP-CLI cache)  
 
-Designed for scheduled cron jobs, with support for:
+Designed for manual runs or scheduled cron jobs, with support for:
 - Dry-run mode  
 - Quiet/cron mode (output only on updates or errors)  
 - External configuration file  
@@ -33,41 +33,37 @@ If you prefer a different location, adjust the paths in the update script or clo
 
 ### Quick Start on NFSN
 
-Create the repo directory if needed, and enter the directory:
 ```bash
 cd /home/private/repos || mkdir -p /home/private/repos && cd /home/private/repos
-```
-### Clone the Repository
-
-Use HTTPS (no authentication required):
-```bash
-git clone https://github.com/cbrunning/wp-backup-update-clean.git
-```
-Or use SSH (requires a GitHub account with an SSH key added):
-```bash
 git clone git@github.com:cbrunning/wp-backup-update-clean.git
+cd /home/private
 ```
+
 Then run the update helper script:
 ```bash
-cd /home/private
 /home/private/repos/wp-backup-update-clean/update-wp-maintenance.sh
 ```
-Notes:
 
-- The helper script will guide you through creating any missing directories and the initial configuration file
-- Using SSH for `git clone` is recommended. See [GitHub Docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) for info on key setup, if needed
+**Tips:**
 
-After setup completes, **edit `/home/private/wp-maintenance.conf`** to set your `DOMAIN` and review other paths/settings for your site.
+- The helper script will guide you through creating any missing directories and the initial configuration.
+- Use `--quiet` (or `--cron`) for silent operation.
+- Prefix with `exec` if you want the script to replace your shell (useful for running updates and disconnecting immediately).
+- Using SSH for git clone is recommended – see [GitHub Docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) for key setup. (`git clone git@github.com:cbrunning/wp-backup-update-clean.git`)
 
-You can then test with a dry run:
+After setup completes, **edit /home/private/wp-maintenance.conf** to set your `DOMAIN` and review other paths/settings for your site.
+
+You can then **test with a dry run:**
 ```bash
 /home/private/wp-maintenance.sh --dry-run
 ```
+Using a custom config file:
+```bash
+/path/to/wp-maintenance.sh -c /path/to/custom.conf
+``` 
 
 ### License
 
 GNU General Public License v2.0 or later (GPLv2+). See [LICENSE](LICENSE) for details.
 
----
 
-More documentation, usage examples, and configuration guides coming soon.

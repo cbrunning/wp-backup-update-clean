@@ -7,9 +7,9 @@ CONFIG_FILE="$DEFAULT_CONFIG"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --config)
+        --config|-c)
             if [[ -z "${2:-}" ]]; then
-                echo "Error: --config requires a file path" >&2
+                echo "Error: --config / -c requires a file path" >&2
                 exit 1
             fi
             CONFIG_FILE="$2"
@@ -35,7 +35,7 @@ fi
 # shellcheck source=/home/private/wp-maintenance.conf
 source "$CONFIG_FILE"
 
-# Set default for RETENTION_WPCLI if not defined
+# Default for new variable
 : "${RETENTION_WPCLI:=90}"
 
 required_vars=(
@@ -70,9 +70,20 @@ while [[ $# -gt 0 ]]; do
             QUIET=true
             shift
             ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS]"
+            echo
+            echo "Options:"
+            echo "  -c, --config FILE     Use custom config file (default: $CONFIG_FILE)"
+            echo "  --dry-run             Show what would happen without making changes"
+            echo "  --backup-only         Only run backup, skip updates and cleanup"
+            echo "  --quiet, --cron       Silent mode (only output on updates/errors)"
+            echo "  -h, --help            Show this help"
+            exit 0
+            ;;
         *)
             echo "Unknown option: $1" >&2
-            echo "Usage: $0 [--config /path/to.conf] [--dry-run] [--backup-only] [--quiet|--cron]" >&2
+            echo "Use --help for usage" >&2
             exit 1
             ;;
     esac
@@ -193,12 +204,11 @@ if ! $DRY_RUN; then
     log "Flushed WordPress object cache"
 fi
 
-# Disable xmlrpc.php by renaming — always do this if xmlrpc.php exists
+# Improved xmlrpc.php handling
 if [[ -r "$XMLRPC_ORIG" ]]; then
     if $DRY_RUN; then
-        dry_log "Would rename $XMLRPC_ORIG → $XMLRPC_DISABLED (and timestamp any existing .disabled)"
+        dry_log "Would rename $XMLRPC_ORIG → $XMLRPC_DISABLED (timestamping any existing .disabled)"
     else
-        # Timestamp existing .disabled if it exists
         if [[ -e "$XMLRPC_DISABLED" ]]; then
             TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
             mv "$XMLRPC_DISABLED" "${XMLRPC_DISABLED}.${TIMESTAMP}"
@@ -208,7 +218,7 @@ if [[ -r "$XMLRPC_ORIG" ]]; then
         log "Disabled xmlrpc.php by renaming to xmlrpc.php.disabled"
     fi
 else
-    log "xmlrpc.php not present — no action needed"
+    log "xmlrpc.php not present – no action needed"
 fi
 
 log "Full maintenance completed successfully"
