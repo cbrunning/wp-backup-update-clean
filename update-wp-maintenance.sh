@@ -12,7 +12,7 @@ REPO_PARENT="/home/private/repos"
 REPO_DIR="$REPO_PARENT/wp-backup-update-clean"
 SCRIPT_BASE_DIR="${SCRIPT_BASE_DIR:-$(dirname "$SCRIPT_DEST")}"
 GENERIC_EXAMPLE="$REPO_DIR/wp-maintenance-generic.conf.example"
-NFSN_EXAMPLE="$REPO_DIR/wp-maintenance.conf.nfsn-example"
+NFSN_EXAMPLE="$REPO_DIR/wp-maintenance-nfsn.conf.example"
 
 TMP_BACKUP_DIR="/home/tmp/backups"
 FINAL_BACKUP_DIR="/home/private/wordpress-maintenance-backups"

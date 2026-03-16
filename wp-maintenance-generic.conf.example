@@ -1,0 +1,18 @@
+# Generic hosting configuration example
+# Recommended location:
+#   /home/USERNAME/wp-maintenance/wp-maintenance.conf
+
+DOMAIN="yourdomain.example.com"
+
+WP_ROOT="/home/USERNAME/public_html"
+TMP_DIR="/home/USERNAME/tmp/backups"
+BACKUP_DIR="/home/USERNAME/wp-maintenance/backups"
+WP_CLI_CACHE="/home/USERNAME/.wp-cli/cache"
+LOG_DIR="/home/USERNAME/logs"
+MAINT_LOG="/home/USERNAME/logs/wp-maintenance.log"
+
+RETENTION_BACKUPS=30
+RETENTION_LOGS=180
+RETENTION_WPCLI=90 # days to keep WP-CLI caches (e.g. older versions of plugins & themes)
+
+UPDATE_SCRIPT="/usr/local/bin/wp-update.sh"
