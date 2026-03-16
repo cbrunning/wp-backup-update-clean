@@ -1,11 +1,19 @@
-#!/bin/bash
-set -euo pipefail
+#!/bin/bash 
+set -euo pipefail 
 
 # ==================== Configuration ====================
+
+SCRIPT_DEST="/home/private/wp-maintenance.sh"
+# ...or for generic cPanel config, uncomment the next line
+#SCRIPT_DEST="/home/USERNAME/wp-maintenance/wp-maintenance.sh"
+
+#HELPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_PARENT="/home/private/repos"
 REPO_DIR="$REPO_PARENT/wp-backup-update-clean"
-SCRIPT_DEST="/home/private/wp-maintenance.sh"
-CONFIG_DEST="/home/private/wp-maintenance.conf"
+SCRIPT_BASE_DIR="${SCRIPT_BASE_DIR:-$(dirname "$SCRIPT_DEST")}"
+GENERIC_EXAMPLE="$REPO_DIR/wp-maintenance-generic.conf.example"
+NFSN_EXAMPLE="$REPO_DIR/wp-maintenance.conf.nfsn-example"
+
 TMP_BACKUP_DIR="/home/tmp/backups"
 FINAL_BACKUP_DIR="/home/private/wordpress-maintenance-backups"
 
@@ -26,6 +34,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+say() {
+    $QUIET && return 0
+    echo "$@"
+}
+
+abort() {
+    echo "$@" >&2
+    exit 1
+}
+
 # Function to prompt and create directory (silent in quiet mode)
 create_dir_if_needed() {
     local dir="$1"
@@ -33,7 +51,7 @@ create_dir_if_needed() {
 
     if [[ ! -d "$dir" ]]; then
         if $QUIET; then
-            echo "Aborting — $dir is required." >&2
+            echo "Aborting - $dir is required." >&2
             exit 1
         fi
         echo "$description ($dir) does not exist."
@@ -49,7 +67,7 @@ create_dir_if_needed() {
     fi
 }
 
-echo "Setting up wp-backup-update-clean..."
+say "Setting up wp-backup-update-clean..."
 
 # Step 1: Ensure repo parent directory exists
 create_dir_if_needed "$REPO_PARENT" "Repository parent directory"
@@ -89,38 +107,124 @@ fi
 # Step 4: Install script and ensure executable
 cp wp-maintenance.sh "$SCRIPT_DEST"
 chmod 700 "$SCRIPT_DEST"
-[[ $QUIET ]] || echo "Installed script to $SCRIPT_DEST"
+$QUIET || echo "Installed script to $SCRIPT_DEST"
 
 # Step 5: Directories
 create_dir_if_needed "$TMP_BACKUP_DIR" "Temporary backup directory"
 create_dir_if_needed "$FINAL_BACKUP_DIR" "Final backup storage directory"
 
-# Step 6: Handle configuration
-if [[ ! -f "$CONFIG_DEST" ]]; then
-    if $QUIET; then
-        cp wp-maintenance.conf.nfsn-example "$CONFIG_DEST"
-    else
-        echo
-        echo "No configuration found. Copying NFSN example..."
-        cp wp-maintenance.conf.nfsn-example "$CONFIG_DEST"
-        echo "→ Created $CONFIG_DEST"
-        echo "   Please edit DOMAIN and other settings!"
-    fi
-else
-    # Only backup if we are going to modify the config
-    if ! grep -q "^RETENTION_WPCLI=" "$CONFIG_DEST"; then
-        CONFIG_BACKUP="$CONFIG_DEST.bak.$(date +%Y%m%d_%H%M%S)"
-        cp "$CONFIG_DEST" "$CONFIG_BACKUP"
-        [[ $QUIET ]] || echo "Backed up existing config to $CONFIG_BACKUP"
+# Config discovery
 
-        # Insert RETENTION_WPCLI after RETENTION_LOGS
-        awk '/^RETENTION_LOGS=/ {print; print "RETENTION_WPCLI=90       # days to keep WP-CLI caches (default 90 if not set)"; next} {print}' "$CONFIG_DEST" > "$CONFIG_DEST.tmp"
-        mv "$CONFIG_DEST.tmp" "$CONFIG_DEST"
-        [[ $QUIET ]] || echo "Inserted RETENTION_WPCLI=90 into $CONFIG_DEST"
+find_conf_files() {
+    find "$SCRIPT_BASE_DIR" -maxdepth 1 -type f -name 'wp-maintenance*.conf' | sort
+}
+
+prompt_yes_no() {
+    local prompt="$1"
+    local default="${2:-Y}"
+    local answer
+
+    if [[ "$default" == "Y" ]]; then
+        read -r -p "$prompt (Y/n): " answer
+        answer="${answer:-Y}"
     else
-        [[ $QUIET ]] || echo "Existing config preserved at $CONFIG_DEST (RETENTION_WPCLI already defined)."
+        read -r -p "$prompt (y/N): " answer
+        answer="${answer:-N}"
     fi
+
+    [[ "$answer" =~ ^[Yy]$ ]]
+}
+
+choose_example_file() {
+    if [[ -f "$GENERIC_EXAMPLE" && -f "$NFSN_EXAMPLE" ]]; then
+        echo
+        echo "No wp-maintenance*.conf files found in $SCRIPT_BASE_DIR."
+        echo "Choose an example to copy:"
+        echo "  1) Generic example (recommended for cPanel and most hosts)"
+        echo "  2) NFSN example"
+        while true; do
+            read -r -p "Enter 1 or 2 [1]: " choice
+            choice="${choice:-1}"
+            case "$choice" in
+                1) echo "$GENERIC_EXAMPLE"; return 0 ;;
+                2) echo "$NFSN_EXAMPLE"; return 0 ;;
+                *) echo "Please enter 1 or 2." ;;
+            esac
+        done
+    elif [[ -f "$GENERIC_EXAMPLE" ]]; then
+        echo "$GENERIC_EXAMPLE"
+    elif [[ -f "$NFSN_EXAMPLE" ]]; then
+        echo "$NFSN_EXAMPLE"
+    else
+        return 1
+    fi
+}
+
+# Step 6: Handle configuration
+mapfile -t CONF_FILES < <(find_conf_files)
+
+if [[ "${#CONF_FILES[@]}" -eq 0 ]]; then
+    if $QUIET; then
+        abort "Aborting - no wp-maintenance*.conf files found in $SCRIPT_BASE_DIR"
+    fi
+
+    EXAMPLE_SOURCE="$(choose_example_file)" || abort "Aborting - no example config file found in $REPO_DIR"
+    NEW_CONF="$SCRIPT_BASE_DIR/wp-maintenance.conf"
+
+    echo
+    if prompt_yes_no "Create $NEW_CONF from $(basename "$EXAMPLE_SOURCE") now?" "Y"; then
+        cp "$EXAMPLE_SOURCE" "$NEW_CONF"
+        echo "Created $NEW_CONF"
+        echo "Please edit DOMAIN and other settings before running wp-maintenance.sh."
+    else
+        abort "Aborting - no configuration file present."
+    fi
+
+    mapfile -t CONF_FILES < <(find_conf_files)
 fi
+
+if [[ "${#CONF_FILES[@]}" -eq 0 ]]; then
+    abort "Aborting - no wp-maintenance*.conf files found in $SCRIPT_BASE_DIR"
+fi
+
+for CONF_DEST in "${CONF_FILES[@]}"; do
+    if ! grep -q "^RETENTION_WPCLI=" "$CONF_DEST"; then
+        if $QUIET; then
+            abort "Aborting - RETENTION_WPCLI is missing from $CONF_DEST"
+        fi
+
+        echo
+        echo "Config missing RETENTION_WPCLI: $CONF_DEST"
+        if prompt_yes_no "Insert RETENTION_WPCLI=90 into this config now?" "Y"; then
+            CONFIG_BACKUP="$CONF_DEST.bak.$(date +%Y%m%d_%H%M%S)"
+            cp "$CONF_DEST" "$CONFIG_BACKUP"
+            echo "Backed up existing config to $CONFIG_BACKUP"
+
+            if grep -q "^RETENTION_LOGS=" "$CONF_DEST"; then
+                awk '
+                    /^RETENTION_LOGS=/ {
+                        print
+                        print "RETENTION_WPCLI=90 # days to keep WP-CLI caches (default 90 if not set)"
+                        next
+                    }
+                    { print }
+                ' "$CONF_DEST" > "$CONF_DEST.tmp"
+            else
+                awk '
+                    { print }
+                    END {
+                        print "RETENTION_WPCLI=90 # days to keep WP-CLI caches (default 90 if not set)"
+                    }
+                ' "$CONF_DEST" > "$CONF_DEST.tmp"
+            fi
+
+            mv "$CONF_DEST.tmp" "$CONF_DEST"
+            echo "Inserted RETENTION_WPCLI=90 into $CONF_DEST"
+        else
+            abort "Aborting - RETENTION_WPCLI is required in $CONF_DEST"
+        fi
+    fi
+done
 
 # Final output only if not in quiet mode
 if ! $QUIET; then
@@ -131,7 +235,7 @@ if ! $QUIET; then
     echo
     echo "You can now run the maintenance script with:"
     echo "  $SCRIPT_DEST"
-    echo "  or with a custom config: /path/to/wp-maintenance.sh -c /path/to/custom.conf"
+    echo "  or with a custom config: $SCRIPT_DEST -c /path/to/custom.conf"
     echo
     echo "Run a dry test with:"
     echo "  $SCRIPT_DEST --dry-run"
