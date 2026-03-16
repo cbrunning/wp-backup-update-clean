@@ -35,7 +35,7 @@ If you prefer a different location, adjust the paths in the update script or clo
 
 ```bash
 cd /home/private/repos || mkdir -p /home/private/repos && cd /home/private/repos
-git clone git@github.com:cbrunning/wp-backup-update-clean.git
+git clone https://github.com/cbrunning/wp-backup-update-clean.git
 cd /home/private
 ```
 
@@ -51,13 +51,14 @@ Then run the update helper script:
 - Prefix with `exec` if you want the script to replace your shell (useful for running updates and disconnecting immediately).
 - Using SSH for git clone is recommended – see [GitHub Docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) for key setup. (`git clone git@github.com:cbrunning/wp-backup-update-clean.git`)
 
-After setup completes, **edit /home/private/wp-maintenance.conf** to set your `DOMAIN` and review other paths/settings for your site.
+After setup completes, **edit wp-maintenance.conf** (by default located in `/home/private` on NFSN).
+Set your `DOMAIN` and review other paths/settings for your site.
 
-You can then **test with a dry run:**
+**Test with a dry run:**
 ```bash
-/home/private/wp-maintenance.sh --dry-run
+/path/to/wp-maintenance.sh --dry-run
 ```
-Using a custom config file:
+To use a custom config file:
 ```bash
 /path/to/wp-maintenance.sh -c /path/to/custom.conf
 ``` 
