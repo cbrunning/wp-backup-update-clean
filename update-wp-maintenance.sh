@@ -137,31 +137,45 @@ prompt_yes_no() {
 
 choose_example_file() {
     if [[ -f "$GENERIC_EXAMPLE" && -f "$NFSN_EXAMPLE" ]]; then
-        echo
-        echo "No wp-maintenance*.conf files found in $SCRIPT_BASE_DIR."
-        echo "Choose an example to copy:"
-        echo "  1) Generic example (recommended for cPanel and most hosts)"
-        echo "  2) NFSN example"
+        echo >&2
+        echo "No wp-maintenance*.conf files found in $SCRIPT_BASE_DIR." >&2
+        echo "Choose an example to copy:" >&2
+        echo "  1) Generic / cPanel example  - recommended for cPanel and most hosts" >&2
+        echo "  2) NFSN example              - recommended for NearlyFreeSpeech.NET" >&2
         while true; do
             read -r -p "Enter 1 or 2 [1]: " choice
             choice="${choice:-1}"
             case "$choice" in
-                1) echo "$GENERIC_EXAMPLE"; return 0 ;;
-                2) echo "$NFSN_EXAMPLE"; return 0 ;;
-                *) echo "Please enter 1 or 2." ;;
+                1) printf '%s\n' "$GENERIC_EXAMPLE"; return 0 ;;
+                2) printf '%s\n' "$NFSN_EXAMPLE"; return 0 ;;
+                *) echo "Please enter 1 or 2." >&2 ;;
             esac
         done
     elif [[ -f "$GENERIC_EXAMPLE" ]]; then
-        echo "$GENERIC_EXAMPLE"
+        printf '%s\n' "$GENERIC_EXAMPLE"
     elif [[ -f "$NFSN_EXAMPLE" ]]; then
-        echo "$NFSN_EXAMPLE"
+        printf '%s\n' "$NFSN_EXAMPLE"
     else
         return 1
     fi
 }
 
 # Step 6: Handle configuration
-mapfile -t CONF_FILES < <(find_conf_files)
+load_conf_files() {
+    local conf_list_file
+    conf_list_file="$(mktemp)" || abort "Aborting - unable to create temporary file."
+
+    find_conf_files > "$conf_list_file"
+
+    CONF_FILES=()
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && CONF_FILES+=("$line")
+    done < "$conf_list_file"
+
+    rm -f "$conf_list_file"
+}
+
+load_conf_files
 
 if [[ "${#CONF_FILES[@]}" -eq 0 ]]; then
     if $QUIET; then
@@ -180,7 +194,7 @@ if [[ "${#CONF_FILES[@]}" -eq 0 ]]; then
         abort "Aborting - no configuration file present."
     fi
 
-    mapfile -t CONF_FILES < <(find_conf_files)
+    load_conf_files
 fi
 
 if [[ "${#CONF_FILES[@]}" -eq 0 ]]; then
