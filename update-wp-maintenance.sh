@@ -2,20 +2,27 @@
 set -euo pipefail 
 
 # ==================== Configuration ====================
+HOME_DIR="${HOME%/}"
 
-SCRIPT_DEST="/home/private/wp-maintenance.sh"
-# ...or for generic cPanel config, uncomment the next line
-#SCRIPT_DEST="/home/USERNAME/wp-maintenance/wp-maintenance.sh"
+INSTALL_BASE="${INSTALL_BASE:-$HOME_DIR/wp-maintenance}"
+INSTALL_BASE="${INSTALL_BASE%/}"
 
-#HELPER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_PARENT="/home/private/repos"
-REPO_DIR="$REPO_PARENT/wp-backup-update-clean"
-SCRIPT_BASE_DIR="${SCRIPT_BASE_DIR:-$(dirname "$SCRIPT_DEST")}"
-GENERIC_EXAMPLE="$REPO_DIR/wp-maintenance-generic.conf.example"
-NFSN_EXAMPLE="$REPO_DIR/wp-maintenance-nfsn.conf.example"
+REPO_PARENT="${REPO_PARENT:-$INSTALL_BASE/repos}"
+REPO_DIR="${REPO_DIR:-$REPO_PARENT/wp-backup-update-clean}"
+SCRIPT_DEST="${SCRIPT_DEST:-$INSTALL_BASE/wp-maintenance.sh}"
+SCRIPT_BASE_DIR="${SCRIPT_BASE_DIR:-$INSTALL_BASE}"
 
-TMP_BACKUP_DIR="/home/tmp/backups"
-FINAL_BACKUP_DIR="/home/private/wordpress-maintenance-backups"
+GENERIC_EXAMPLE="${GENERIC_EXAMPLE:-$REPO_DIR/wp-maintenance-generic.conf.example}"
+NFSN_EXAMPLE="${NFSN_EXAMPLE:-$REPO_DIR/wp-maintenance-nfsn.conf.example}"
+
+if [[ "$HOME_DIR" == "/home/private" ]]; then
+    TMP_BACKUP_DIR_DEFAULT="/home/tmp/backups"
+else
+    TMP_BACKUP_DIR_DEFAULT="$HOME_DIR/tmp/backups"
+fi
+
+TMP_BACKUP_DIR="${TMP_BACKUP_DIR:-$TMP_BACKUP_DIR_DEFAULT}"
+FINAL_BACKUP_DIR="${FINAL_BACKUP_DIR:-$SCRIPT_BASE_DIR/wordpress-maintenance-backups}"
 
 # Flags
 QUIET=false
@@ -61,7 +68,7 @@ create_dir_if_needed() {
             mkdir -p "$dir"
             echo "Created $dir"
         else
-            echo "Aborting — $dir is required."
+            echo "Aborting - $dir is required."
             exit 1
         fi
     fi
