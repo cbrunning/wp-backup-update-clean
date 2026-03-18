@@ -21,4 +21,4 @@ RETENTION_WPCLI="${RETENTION_WPCLI:-90}"      # days to keep WP-CLI caches (e.g.
 UPDATE_SCRIPT="${UPDATE_SCRIPT:-$PRIVATE_BASE/wpcli-update-placeholder.sh}"
 # Replace with your real WordPress update script when ready. NFSN default is /usr/local/bin/wp-update.sh
 # Example:
-# UPDATE_SCRIPT="/usr/local/bin/wp-update.sh}"
+# UPDATE_SCRIPT="/usr/local/bin/wp-update.sh"
