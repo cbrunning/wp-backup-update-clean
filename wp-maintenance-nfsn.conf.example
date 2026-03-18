@@ -1,24 +1,24 @@
-# NFSN hosting configuration example
+# NearlyFreeSpeech.NET (NFSN) hosting configuration example
 # Recommended location:
-#   /home/private/wp-maintenance.conf
+#   /home/private/wp-maintenance/wp-maintenance.conf
+#      usually $HOME = /home/private on NFSN
 
-DOMAIN="yourdomain.example.com"
-WP_ROOT="/home/public"
+DOMAIN="yourdomain.example.com"  # edit this -- DOMAIN is used in the naming of output files
+WP_ROOT="/home/public"           # edit this -- WP_ROOT directory path is required to affect the correct site
+                                 # WP_ROOT = "/home/public" on NFSN unless customized or Per-Alias Document Root is enabled at NFSN
 PRIVATE_BASE="/home/private"
 
 TMP_DIR="${TMP_DIR:-/home/tmp/backups}"
-BACKUP_DIR="${BACKUP_DIR:-$PRIVATE_BASE/wordpress-maintenance-backups}"
-LOG_DIR="${LOG_DIR:-$PRIVATE_BASE/logs}"
-MAINT_LOG="${MAINT_LOG:-$LOG_DIR/wp-maintenance.log}"
+BACKUP_DIR="${BACKUP_DIR:-$PRIVATE_BASE/wordpress-backups}"
+LOG_DIR="${LOG_DIR:-$PRIVATE_BASE/wp-maintenance-logs}"
 WP_CLI_CACHE="${WP_CLI_CACHE:-$WP_ROOT/.wp-cli/cache}"
 
 # Disk space usage can be limited
-RETENTION_BACKUPS="${RETENTION_BACKUPS:-108}" # days to keep backups; consider keeping this lower if you regularly copy backups to external storage
-RETENTION_LOGS="${RETENTION_LOGS:-540}"       # days to keep logs
+RETENTION_BACKUPS="${RETENTION_BACKUPS:-108}" # days to keep backups (consider keeping this lower while regularly moving backups to external storage)
+RETENTION_LOGS="${RETENTION_LOGS:-540}"       # days to keep wp-maintenance logs
 RETENTION_WPCLI="${RETENTION_WPCLI:-90}"      # days to keep WP-CLI caches (e.g. older plugin and theme packages)
 
-# Path to your site update script
-UPDATE_SCRIPT="${UPDATE_SCRIPT:-/usr/local/bin/wp-update.sh}"
+UPDATE_SCRIPT="${UPDATE_SCRIPT:-$PRIVATE_BASE/wpcli-update-placeholder.sh}"
+# Replace with your real WordPress update script when ready. NFSN default is /usr/local/bin/wp-update.sh
 # Example:
-# UPDATE_SCRIPT="${UPDATE_SCRIPT:-/path/to/update-site.sh"
-
+# UPDATE_SCRIPT="${UPDATE_SCRIPT:-/usr/local/bin/wp-update.sh}"

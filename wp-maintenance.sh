@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # ==================== Configuration Loading ====================
-DEFAULT_CONFIG="/home/private/wp-maintenance.conf"
+HOME_DIR="${HOME%/}"
+DEFAULT_CONFIG="${DEFAULT_CONFIG:-$HOME_DIR/wp-maintenance/wp-maintenance.conf}"
 CONFIG_FILE="$DEFAULT_CONFIG"
 
 while [[ $# -gt 0 ]]; do
@@ -32,11 +33,15 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
     exit 1
 fi
 
-# shellcheck source=/home/private/wp-maintenance.conf
+# shellcheck disable=SC1090
 source "$CONFIG_FILE"
-
-# Default for new variable
 : "${RETENTION_WPCLI:=90}"
+: "${TMP_DIR:=$HOME_DIR/tmp/backups}"
+: "${BACKUP_DIR:=$PRIVATE_BASE/wordpress-backups}"
+: "${RUN_TIMESTAMP:=$(date +"%Y-%m-%d_%H-%M-%S")}"
+
+DOMAIN_SAFE="${DOMAIN//[^A-Za-z0-9._-]/_}"
+MAINT_LOG="${MAINT_LOG:-$LOG_DIR/${DOMAIN_SAFE}-wp-maintenance-${RUN_TIMESTAMP}.log}"
 
 required_vars=(
     DOMAIN WP_ROOT TMP_DIR BACKUP_DIR WP_CLI_CACHE
@@ -50,6 +55,12 @@ for var in "${required_vars[@]}"; do
         exit 1
     fi
 done
+
+TIMESTAMP="$RUN_TIMESTAMP"
+BACKUP_NAME="${DOMAIN_SAFE}_wordpress_${TIMESTAMP}.tar.gz"
+TMP_BACKUP="${TMP_DIR}/${BACKUP_NAME}"
+DB_DUMP="${TMP_DIR}/${DOMAIN_SAFE}_db_${TIMESTAMP}.sql"
+DB_LOG="${TMP_DIR}/${DOMAIN_SAFE}_db_export_${TIMESTAMP}.log"
 
 # ==================== Flags ====================
 DRY_RUN=false

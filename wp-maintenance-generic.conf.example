@@ -1,22 +1,24 @@
 # Generic hosting configuration example
 # Recommended location:
 #   /home/USERNAME/wp-maintenance/wp-maintenance.conf
+#      usually $HOME = /home/USERNAME (your USERNAME)
 
-DOMAIN="yourdomain.example.com"
-WP_ROOT="/home/USERNAME/public_html"
-PRIVATE_BASE="/home/USERNAME/wp-maintenance"
+DOMAIN="yourdomain.example.com"               # edit this -- DOMAIN is used in the naming of output files
+WP_ROOT="$HOME/site-document-root-directory"  # edit this -- WP_ROOT is the individual site's directory path (e.g. cPanel site Document Root)
+
+PRIVATE_BASE="$HOME/wp-maintenance"
 
 TMP_DIR="${TMP_DIR:-$HOME/tmp/backups}"
-BACKUP_DIR="${BACKUP_DIR:-$PRIVATE_BASE/backups}"
-LOG_DIR="${LOG_DIR:-$PRIVATE_BASE/logs}"
-MAINT_LOG="${MAINT_LOG:-$LOG_DIR/wp-maintenance.log}"
+BACKUP_DIR="${BACKUP_DIR:-$PRIVATE_BASE/wordpress-backups}"
+LOG_DIR="${LOG_DIR:-$PRIVATE_BASE/wp-maintenance-logs}"
 WP_CLI_CACHE="${WP_CLI_CACHE:-$WP_ROOT/.wp-cli/cache}"
 
 # Disk space usage can be limited
-RETENTION_BACKUPS="${RETENTION_BACKUPS:-108}" # days to keep backups (consider keeping this number lower while regularly sending backups to external storage)
-RETENTION_LOGS="${RETENTION_LOGS:-540}"       # days to keep general logs
+RETENTION_BACKUPS="${RETENTION_BACKUPS:-108}" # days to keep backups (consider keeping this number lower while regularly moving backups to external storage)
+RETENTION_LOGS="${RETENTION_LOGS:-540}"       # days to keep wp-maintenance logs
 RETENTION_WPCLI="${RETENTION_WPCLI:-90}"      # days to keep WP-CLI caches (e.g. older versions of plugins & themes)
 
-UPDATE_SCRIPT="${UPDATE_SCRIPT:-}"
+UPDATE_SCRIPT="${UPDATE_SCRIPT:-$PRIVATE_BASE/wpcli-update-placeholder.sh}"
+# Replace with your real WordPress update script when ready.
 # Example:
-# UPDATE_SCRIPT="${UPDATE_SCRIPT:-/path/to/update-site.sh"
+# UPDATE_SCRIPT="${UPDATE_SCRIPT:-$PRIVATE_BASE/wpcli-update-basic.sh"
