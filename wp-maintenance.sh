@@ -35,10 +35,21 @@ fi
 
 # shellcheck disable=SC1090
 source "$CONFIG_FILE"
+
+PRIVATE_BASE="${PRIVATE_BASE%/}"
+WP_ROOT="${WP_ROOT%/}"
+
 : "${RETENTION_WPCLI:=90}"
 : "${TMP_DIR:=$HOME_DIR/tmp/backups}"
 : "${BACKUP_DIR:=$PRIVATE_BASE/wordpress-backups}"
+: "${LOG_DIR:=$PRIVATE_BASE/wp-maintenance-logs}"
+: "${WP_CLI_CACHE:=$WP_ROOT/.wp-cli/cache}"
 : "${RUN_TIMESTAMP:=$(date +"%Y-%m-%d_%H-%M-%S")}"
+
+TMP_DIR="${TMP_DIR%/}"
+BACKUP_DIR="${BACKUP_DIR%/}"
+LOG_DIR="${LOG_DIR%/}"
+WP_CLI_CACHE="${WP_CLI_CACHE%/}"
 
 DOMAIN_SAFE="${DOMAIN//[^A-Za-z0-9._-]/_}"
 MAINT_LOG="${MAINT_LOG:-$LOG_DIR/${DOMAIN_SAFE}-wp-maintenance-${RUN_TIMESTAMP}.log}"
