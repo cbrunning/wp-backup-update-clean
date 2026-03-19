@@ -36,8 +36,13 @@ fi
 # shellcheck disable=SC1090
 source "$CONFIG_FILE"
 
-PRIVATE_BASE="${PRIVATE_BASE%/}"
-WP_ROOT="${WP_ROOT%/}"
+normalize_path() {
+    local path="$1"
+    printf '%s\n' "$path" | sed 's#//*#/#g; s#/$##'
+}
+
+PRIVATE_BASE="$(normalize_path "$PRIVATE_BASE")"
+WP_ROOT="$(normalize_path "$WP_ROOT")"
 
 : "${RETENTION_WPCLI:=90}"
 : "${TMP_DIR:=$HOME_DIR/tmp/backups}"
@@ -46,10 +51,10 @@ WP_ROOT="${WP_ROOT%/}"
 : "${WP_CLI_CACHE:=$WP_ROOT/.wp-cli/cache}"
 : "${RUN_TIMESTAMP:=$(date +"%Y-%m-%d_%H-%M-%S")}"
 
-TMP_DIR="${TMP_DIR%/}"
-BACKUP_DIR="${BACKUP_DIR%/}"
-LOG_DIR="${LOG_DIR%/}"
-WP_CLI_CACHE="${WP_CLI_CACHE%/}"
+TMP_DIR="$(normalize_path "$TMP_DIR")"
+BACKUP_DIR="$(normalize_path "$BACKUP_DIR")"
+LOG_DIR="$(normalize_path "$LOG_DIR")"
+WP_CLI_CACHE="$(normalize_path "$WP_CLI_CACHE")"
 
 DOMAIN_SAFE="${DOMAIN//[^A-Za-z0-9._-]/_}"
 MAINT_LOG="${MAINT_LOG:-$LOG_DIR/${DOMAIN_SAFE}-wp-maintenance-${RUN_TIMESTAMP}.log}"
