@@ -11,7 +11,7 @@ PRIVATE_BASE="${PRIVATE_BASE:-$HOME/wp-maintenance}"
 TMP_DIR="${TMP_DIR:-/home/tmp/backups}"
 BACKUP_DIR="${BACKUP_DIR:-$PRIVATE_BASE/wordpress-backups}"
 LOG_DIR="${LOG_DIR:-$PRIVATE_BASE/wp-maintenance-logs}"
-WP_CLI_CACHE="${WP_CLI_CACHE:-$WP_ROOT/.wp-cli/cache}"
+WP_CLI_CACHE="${WP_CLI_CACHE:-$HOME/.wp-cli/cache}"
 
 # Disk space usage can be limited
 RETENTION_BACKUPS="${RETENTION_BACKUPS:-108}" # days to keep backups (consider keeping this lower while regularly moving backups to external storage)
