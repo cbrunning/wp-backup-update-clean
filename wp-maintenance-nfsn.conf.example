@@ -6,7 +6,7 @@
 DOMAIN="yourdomain.example.com"  # edit this -- DOMAIN is used in the naming of output files
 WP_ROOT="/home/public"           # edit this -- WP_ROOT directory path is required to affect the correct site
                                  # WP_ROOT = "/home/public" on NFSN unless customized or Per-Alias Document Root is enabled at NFSN
-PRIVATE_BASE="/home/private"
+PRIVATE_BASE="${PRIVATE_BASE:-$HOME/wp-maintenance}"
 
 TMP_DIR="${TMP_DIR:-/home/tmp/backups}"
 BACKUP_DIR="${BACKUP_DIR:-$PRIVATE_BASE/wordpress-backups}"
