@@ -1,70 +1,102 @@
-# wp-backup-update-clean
+# wp-backup-update-clean  
 
-Bash script for automated WordPress maintenance:
-
-- Creates a full site + database backup (with integrity check and size reporting)  
-- Runs updates via a customizable update script (typically WordPress core, plugin, and theme updates using WP-CLI)  
-- Performs post-update cleanup (caches, old logs, WP-CLI cache)  
-
-Designed for manual runs or scheduled cron jobs, with support for:
+Bash scripts for automated WordPress maintenance.  
+  
+Features include:  
+- Full site + database backup with integrity checks and size reporting  
+- Updates via a configurable update script  
+- Cleanup of old backups, maintenance logs, and WP-CLI cache  
 - Dry-run mode  
-- Quiet/cron mode (output only on updates or errors)  
-- External configuration file  
+- Quiet / cron mode with reduced output
+- External config file support  
 - Backup-only mode  
-
-Tested on NearlyFreeSpeech.NET (NFSN) accounts. The default configuration uses NFSN's provided update script, but you can easily replace it with your own WP-CLI-based updater.
-
-### Recommended Directory Layout on NearlyFreeSpeech.NET (NFSN)
-
-For a clean separation between source code and runtime files:
-
-```plaintext
-/home/private/
-├── wp-maintenance.sh                  # Script called by cron
-├── wp-maintenance.conf                # Your site-specific configuration
-├── repos/                             # Git repositories (created automatically if needed)
-│   └── wp-backup-update-clean/        # Cloned repository
-└── wordpress-maintenance-backups/     # Final backups (created automatically)
+  
+Tested on NearlyFreeSpeech.NET (NFSN), with growing support for more generic hosting environments such as cPanel.  
+ 
+## Recommended layout  
+ 
+The scripts are intended to live under:  
+  
+```plaintext  
+$HOME/wp-maintenance/  
+├── wp-maintenance.sh  
+├── wp-maintenance.conf  
+├── wpcli-update-placeholder.sh  
+├── wpcli-update-basic.sh  
+├── repos/  
+│   └── wp-backup-update-clean/  
+├── wordpress-backups/  
+└── wp-maintenance-logs/
 ```
-
-The included `update-wp-maintenance.sh` helper script will prompt to create `/home/private/repos` (and other required directories) if missing.
-
-If you prefer a different location, adjust the paths in the update script or clone manually.
-
-### Quick Start on NFSN
-
+ 
+## Quick start
 ```bash
-cd /home/private/repos || mkdir -p /home/private/repos && cd /home/private/repos
-git clone https://github.com/cbrunning/wp-backup-update-clean.git
-cd /home/private
+mkdir -p "$HOME/wp-maintenance/repos"  
+cd "$HOME/wp-maintenance/repos"  
+git clone https://github.com/cbrunning/wp-backup-update-clean.git  
+"$HOME/wp-maintenance/repos/wp-backup-update-clean/update-wp-maintenance.sh"
 ```
+ 
+The update helper can:
+ 
+- clone or update the repository
+- install `wp-maintenance.sh`
+- help create an initial config file from an example
+- prompt to create required directories
+- create a safe placeholder update script
+- optionally create a basic WP-CLI update script
+ 
+## Example configs
+ 
+The repository includes two example config files:
 
-Then run the update helper script:
-```bash
-/home/private/repos/wp-backup-update-clean/update-wp-maintenance.sh
+- `wp-maintenance-generic.conf.example` - recommended for cPanel and most non-NFSN hosts
+- `wp-maintenance-nfsn.conf.example` - recommended for NearlyFreeSpeech.NET
+
+After setup completes, edit:
+ 
 ```
-
-**Tips:**
-
-- The helper script will guide you through creating any missing directories and the initial configuration.
-- Use `--quiet` (or `--cron`) for silent operation.
-- Prefix with `exec` if you want the script to replace your shell (useful for running updates and disconnecting immediately).
-- Using SSH for git clone is recommended – see [GitHub Docs](https://docs.github.com/en/authentication/connecting-to-github-with-ssh) for key setup. (`git clone git@github.com:cbrunning/wp-backup-update-clean.git`)
-
-After setup completes, **edit wp-maintenance.conf** (by default located in `/home/private` on NFSN).
-Set your `DOMAIN` and review other paths/settings for your site.
-
-**Test with a dry run:**
-```bash
-/path/to/wp-maintenance.sh --dry-run
+$HOME/wp-maintenance/wp-maintenance.conf
 ```
-To use a custom config file:
-```bash
-/path/to/wp-maintenance.sh -c /path/to/custom.conf
-``` 
-
-### License
-
-GNU General Public License v2.0 or later (GPLv2+). See [LICENSE](LICENSE) for details.
-
-
+ 
+At minimum, set your `DOMAIN`, `WP_ROOT`, and review the other paths and retention settings.
+ 
+## Update scripts
+ 
+`wp-maintenance.sh` runs whatever is defined in `UPDATE_SCRIPT`.
+ 
+By default, the example configs can point to a placeholder script for safety during initial setup. Replace `UPDATE_SCRIPT` with the WordPress update script you actually want to run.
+ 
+Examples:
+ 
+- NFSN: `/usr/local/bin/wp-update.sh`
+- Generic hosts: `$HOME/wp-maintenance/wpcli-update-basic.sh`
+- Or your own custom script
+ 
+## Logging
+ 
+Maintenance logs are written to a dedicated log directory, and log filenames are generated per run. This makes it easier to separate maintenance logs from unrelated logs and remove old logs based on the configured retention period.
+ 
+## Running the script
+ 
+Dry run:
+ 
+`$HOME/wp-maintenance/wp-maintenance.sh --dry-run`
+ 
+Use a custom config:
+ 
+`$HOME/wp-maintenance/wp-maintenance.sh -c /path/to/custom.conf`
+ 
+Backup only:
+ 
+`$HOME/wp-maintenance/wp-maintenance.sh --backup-only`
+ 
+## Notes
+ 
+- The helper and runtime scripts are designed around a private working directory under `$HOME/wp-maintenance`.
+- Temporary backups default to `/home/tmp/backups` on NFSN and `$HOME/tmp/backups` on more typical hosts.
+- The helper supports multiple `wp-maintenance*.conf` files in the install directory.
+ 
+## License
+ 
+GNU General Public License v2.0 or later (GPLv2+). See `LICENSE` for details.
